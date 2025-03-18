@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';  // Usando useParams para acessar o parâmetro da URL
-import Header from '../../../../components/Header';
 
 export default function EditarProduto() {
   const { id } = useParams();  // Agora usamos useParams para pegar o id da URL

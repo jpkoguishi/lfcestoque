@@ -17,7 +17,9 @@ export default function Produtos() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isClient, setIsClient] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [searchBy, setSearchBy] = useState<string>('codBarras'); // Estado para armazenar a escolha do filtro (codBarras, SKU, nome)
+  const [searchBy, setSearchBy] = useState<string>('codBarras');
+  
+  console.log(user)// Estado para armazenar a escolha do filtro (codBarras, SKU, nome)
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [produtoParaExcluir, setProdutoParaExcluir] = useState<any | null>(null);
