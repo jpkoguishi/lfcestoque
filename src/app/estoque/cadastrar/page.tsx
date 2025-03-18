@@ -5,16 +5,28 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase'; // Certifique-se de importar corretamente o cliente Supabase
 import Select from 'react-select';
 
+interface Produto {
+  id: number;
+  nome: string;
+  SKU: string;
+  codBarras: string;
+}
+
+interface Prateleira {
+  id: number;
+  nome: string;
+}
+
 const CadastrarEstoque = () => {
-  const [produtos, setProdutos] = useState<any[]>([]);
-  const [prateleiras, setPrateleiras] = useState<any[]>([]);
-  const [filteredProdutos, setFilteredProdutos] = useState<any[]>([]);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [prateleiras, setPrateleiras] = useState<Prateleira[]>([]);
+  const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [searchBy, setSearchBy] = useState<'nome' | 'SKU' | 'codBarras'>('codBarras'); // Modificado para 'codBarras' como valor padrão
+  const [searchBy, setSearchBy] = useState<'nome' | 'SKU' | 'codBarras'>('codBarras');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [produtoSelecionado, setProdutoSelecionado] = useState<any | null>(null);
-  const [prateleiraSelecionada, setPrateleiraSelecionada] = useState<any | null>(null);
+  const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
+  const [prateleiraSelecionada, setPrateleiraSelecionada] = useState<Prateleira | null>(null);
   const [quantidade, setQuantidade] = useState<number>(0);
   const router = useRouter();
 
@@ -69,7 +81,7 @@ const CadastrarEstoque = () => {
     setSearchBy(e.target.value as 'nome' | 'SKU' | 'codBarras');
   };
 
-  const handleProdutoClick = (produto: any) => {
+  const handleProdutoClick = (produto: Produto) => {
     setProdutoSelecionado(produto);
     setSearchTerm(produto.nome);
     setFilteredProdutos([]);
@@ -96,7 +108,7 @@ const CadastrarEstoque = () => {
       // Dados para a requisição de estoque
       const data = {
         id_produto: produtoSelecionado.id,
-        id_prateleira: prateleiraSelecionada.value, // Alterei para pegar o ID correto de prateleira
+        id_prateleira: prateleiraSelecionada.id, // Alterado para pegar o ID correto de prateleira
         quantidade: quantidade,
       };
 
@@ -105,7 +117,7 @@ const CadastrarEstoque = () => {
         .from('estoques')
         .select('*')
         .eq('id_produto', produtoSelecionado.id)
-        .eq('id_prateleira', prateleiraSelecionada.value);
+        .eq('id_prateleira', prateleiraSelecionada.id);
 
       if (estoqueError) {
         setError('Erro ao verificar o estoque existente.');
@@ -266,10 +278,10 @@ const CadastrarEstoque = () => {
             <Select
               id="prateleira"
               options={prateleiras.map((prateleira) => ({
-                value: prateleira.id,  // A propriedade value deve ser o ID da prateleira
+                value: prateleira.id,
                 label: prateleira.nome,
               }))}
-              onChange={(selectedOption) => setPrateleiraSelecionada(selectedOption)}
+              onChange={(selectedOption) => setPrateleiraSelecionada(selectedOption as unknown as Prateleira)}
               placeholder="Selecione uma prateleira"
               className="mt-1 mb-4"
             />
