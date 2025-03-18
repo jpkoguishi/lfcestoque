@@ -53,8 +53,13 @@ export default function CadastrarProduto() {
       setCodBarras('');
       setSuccessMessage('Produto cadastrado com sucesso!');
       setTimeout(() => router.push('/produtos'), 2000); // Redireciona para a página de produtos após 2 segundos
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message); // This will work as TypeScript now knows `err` is of type `Error`
+      } else {
+        // Handle other error types or log unexpected ones
+        setError('Erro desconhecido');
+      }
     } finally {
       setLoading(false);
     }

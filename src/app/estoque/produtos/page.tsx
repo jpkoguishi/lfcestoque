@@ -4,10 +4,31 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../../components/Header'; // Importe o Header corretamente
 
+// Tipagem dos produtos e agrupados
+interface Produto {
+  id_produto: string;
+  produtos: {
+    nome: string;
+    SKU: string;
+    codBarras: string;
+    quantidadeTotal: number;
+  };
+  prateleiras: { nome: string }[]; // Assumindo que é um array de objetos com a propriedade 'nome'
+}
+
+interface ProdutoAgrupado {
+  id_produto: string;
+  nome: string;
+  SKU: string;
+  codBarras: string;
+  prateleiras: string; // String contendo os nomes das prateleiras
+  quantidadeTotal: number;
+}
+
 export default function Produtos() {
   const router = useRouter();
-  const [produtos, setProdutos] = useState<any[]>([]);
-  const [filteredProdutos, setFilteredProdutos] = useState<any[]>([]);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -57,9 +78,12 @@ export default function Produtos() {
 
   useEffect(() => {
     if (searchTerm) {
-      setFilteredProdutos(produtos.filter(produto =>
-        produto.produtos[searchBy]?.toLowerCase().includes(searchTerm.toLowerCase())
-      ));
+      setFilteredProdutos(produtos.filter(produto => {
+        const produtoValue = produto.produtos[searchBy as keyof Produto["produtos"]];
+        
+        // Verifica se o valor é string e faz a busca, caso contrário trata como string
+        return String(produtoValue).toLowerCase().includes(searchTerm.toLowerCase());
+      }));
     } else {
       setFilteredProdutos(produtos);
     }
@@ -73,20 +97,34 @@ export default function Produtos() {
     return <div className="text-red-500 text-center">{error}</div>;
   }
 
-  const produtosAgrupados = filteredProdutos.reduce((acc: any[], produto) => {
-    const produtoExistente = acc.find((item: any) => item.id_produto === produto.id_produto);
+  // Função para transformar o produto em agrupado
+  const transformarProdutoParaAgrupado = (produto: Produto): ProdutoAgrupado => {
+    // Verifica se prateleiras é um array válido
+    const prateleiras = Array.isArray(produto.prateleiras) && produto.prateleiras.length > 0
+      ? produto.prateleiras.map((prateleira) => prateleira.nome).join(', ') // Mapeia o nome das prateleiras se for um array
+      : ''; // Caso contrário, retorna uma string vazia
+
+    return {
+      id_produto: produto.id_produto,
+      nome: produto.produtos.nome,
+      SKU: produto.produtos.SKU,
+      codBarras: produto.produtos.codBarras,
+      prateleiras, // A string resultante das prateleiras
+      quantidadeTotal: produto.produtos.quantidadeTotal,
+    };
+  };
+
+  // Agrupando os produtos
+  const produtosAgrupados = filteredProdutos.reduce((acc: ProdutoAgrupado[], produto) => {
+    const produtoExistente = acc.find((item: ProdutoAgrupado) => item.id_produto === produto.id_produto);
 
     if (produtoExistente) {
-      produtoExistente.prateleiras += `, ${produto.prateleiras.nome}`;
+      // Verifica se produto.prateleiras tem ao menos um item
+      if (produto.prateleiras && produto.prateleiras.length > 0) {
+        produtoExistente.prateleiras += `, ${produto.prateleiras[0].nome}`; // Assume que há pelo menos uma prateleira
+      }
     } else {
-      acc.push({
-        id_produto: produto.id_produto,
-        nome: produto.produtos.nome,
-        SKU: produto.produtos.SKU,
-        codBarras: produto.produtos.codBarras,
-        prateleiras: produto.prateleiras.nome,
-        quantidadeTotal: produto.produtos.quantidadeTotal,
-      });
+      acc.push(transformarProdutoParaAgrupado(produto));
     }
 
     return acc;
