@@ -58,12 +58,17 @@ export default function Produtos() {
             throw new Error(`Erro ao carregar os dados. Status: ${response.status}, Mensagem: ${errorDetails}`);
           }
 
-          const data = await response.json();
+          const data: Produto[] = await response.json();
           setProdutos(data);
           setFilteredProdutos(data);
-        } catch (error: any) {
-          console.error('Erro ao buscar os produtos:', error);
-          setError(error.message);
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error('Erro ao buscar os produtos:', error);
+            setError(error.message);
+          } else {
+            console.error('Erro desconhecido:', error);
+            setError('Erro desconhecido');
+          }
         } finally {
           setLoading(false);
         }
@@ -128,7 +133,7 @@ export default function Produtos() {
     }
 
     return acc;
-  }, []);
+  }, []); // Usa um array de produtos agrupados
 
   const formatarPrateleiras = (prateleiras: string) => {
     const prateleirasArray = prateleiras.split(', ');

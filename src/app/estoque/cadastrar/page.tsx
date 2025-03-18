@@ -31,6 +31,8 @@ const CadastrarEstoque = () => {
   const [quantidade, setQuantidade] = useState<number>(0);
   const router = useRouter();
 
+  console.log(produtos);
+
   useEffect(() => {
     const fetchProdutos = async () => {
       setLoading(true);
