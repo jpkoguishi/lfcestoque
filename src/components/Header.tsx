@@ -13,6 +13,14 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Função para calcular o tamanho da fonte com base no comprimento do email
+  const getEmailStyle = () => {
+    if (userEmail && userEmail.length > 30) {
+      return "text-sm"; // Reduz o tamanho da fonte se o email for muito longo
+    }
+    return "text-base"; // Mantém o tamanho padrão se o email não for muito longo
+  };
+
   return (
     <header className="bg-indigo-600 p-4 text-white">
       <div className="container mx-auto flex items-center justify-between">
@@ -71,7 +79,10 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
         <div className="p-4">
           {userEmail ? (
             <div className="mb-4">
-              <p className="text-gray-700">Bem-vindo, {userEmail}</p>
+              <p className={`text-gray-700 ${getEmailStyle()}`}>
+                {/* Aqui aplicamos a alteração do tamanho da fonte */}
+                Olá bem-vindo, {userEmail}
+              </p>
               <button
                 onClick={onLogout}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-full"
