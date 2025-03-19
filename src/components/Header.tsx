@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
         </button>
 
         {/* Título SaaS Estoque colado ao menu hambúrguer */}
-        <h1 className="text-2xl font-bold ml-4">SaaS Estoque</h1>
+        <h1 className="text-2xl font-bold ml-4">LFC Estoque</h1>
 
         {/* Links de navegação à direita */}
         <div className="flex space-x-4 ml-auto">
