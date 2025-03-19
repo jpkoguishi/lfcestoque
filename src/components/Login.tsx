@@ -40,7 +40,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-2xl border border-gray-200">
-        <h2 className="text-3xl font-extrabold text-center text-gray-700">LFC Estoque</h2>
+        <h2 className="text-3xl font-extrabold text-center text-gray-700">Dev Branch</h2>
 
         {error && (
           <div className="bg-red-500 text-white text-center p-3 mb-4 rounded-lg shadow-md">
