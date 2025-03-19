@@ -71,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
         <div className="p-4">
           {userEmail ? (
             <div className="mb-4">
-              <p className="text-gray-700">Bem-vindo, {userEmail}</p>
+              <p className="text-gray-700">Olá, {userEmail}</p>
               <button
                 onClick={onLogout}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-full"
