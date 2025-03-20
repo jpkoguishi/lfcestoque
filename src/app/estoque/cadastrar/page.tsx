@@ -29,6 +29,8 @@ const CadastrarEstoque = () => {
   const [prateleiraSelecionada, setPrateleiraSelecionada] = useState<Prateleira | null>(null);
   const [quantidade, setQuantidade] = useState<number>(0);
 
+  console.log(produtos);
+
   useEffect(() => {
     const fetchProdutos = async () => {
       setLoading(true);
