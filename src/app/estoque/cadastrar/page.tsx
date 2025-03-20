@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 
 interface Produto {
@@ -29,9 +28,6 @@ const CadastrarEstoque = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
   const [prateleiraSelecionada, setPrateleiraSelecionada] = useState<Prateleira | null>(null);
   const [quantidade, setQuantidade] = useState<number>(0);
-  // const router = useRouter();
-
-  console.log(produtos);
 
   useEffect(() => {
     const fetchProdutos = async () => {
@@ -125,6 +121,7 @@ const CadastrarEstoque = () => {
     }
 
     setLoading(true);
+    setError(''); // Limpa qualquer erro anterior
 
     try {
       const token = localStorage.getItem('supabase_jwt');
@@ -241,7 +238,14 @@ const CadastrarEstoque = () => {
         throw new Error('Erro ao atualizar produto');
       }
 
-      // router.push('/estoque/produtos');
+      // Limpar os campos após o sucesso
+      setProdutoSelecionado(null);
+      setPrateleiraSelecionada(null);
+      setQuantidade(0);
+      setSearchTermProduto('');
+      setSearchTermPrateleira('');
+      setFilteredProdutos([]);
+      setFilteredPrateleiras([]);
     } catch (error) {
       console.error('Erro no processamento:', error);
       setError('Erro ao processar o estoque');
