@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 
 interface Produto {
@@ -29,7 +29,7 @@ const CadastrarEstoque = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
   const [prateleiraSelecionada, setPrateleiraSelecionada] = useState<Prateleira | null>(null);
   const [quantidade, setQuantidade] = useState<number>(0);
-  const router = useRouter();
+  // const router = useRouter();
 
   console.log(produtos);
 
