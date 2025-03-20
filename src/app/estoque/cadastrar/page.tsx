@@ -241,7 +241,7 @@ const CadastrarEstoque = () => {
         throw new Error('Erro ao atualizar produto');
       }
 
-      router.push('/estoque/produtos');
+      // router.push('/estoque/produtos');
     } catch (error) {
       console.error('Erro no processamento:', error);
       setError('Erro ao processar o estoque');
