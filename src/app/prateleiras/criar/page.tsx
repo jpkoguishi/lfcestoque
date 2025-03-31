@@ -27,7 +27,7 @@ export default function CriarPrateleiraPage() {
 
     try {
       // Inserir a nova prateleira no banco de dados
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('prateleiras')
         .insert([{ nome: prateleiraNome }])
         .single(); // O `.single()` garante que apenas uma linha será inserida

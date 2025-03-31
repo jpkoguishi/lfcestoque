@@ -82,7 +82,7 @@ export default function PrateleirasPage() {
 
     fetchUserEmail(); // Chama a função para pegar o email do usuário
     fetchData(); // Chama a função para carregar as prateleiras e produtos
-  }, []);
+  }, []); // O array de dependências está vazio agora, garantindo que o useEffect seja chamado uma única vez.
 
   // Filtra as prateleiras com base no nome
   const filteredPrateleiras = prateleiras.filter((prateleira) =>
