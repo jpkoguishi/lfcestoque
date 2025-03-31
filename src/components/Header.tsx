@@ -45,6 +45,10 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
           <Link href="/estoque/produtos" className="text-white hover:bg-indigo-700 px-4 py-2 rounded-md">
             Estoque
           </Link>
+          {/* Link para Prateleiras */}
+          <Link href="/prateleiras" className="text-white hover:bg-indigo-700 px-4 py-2 rounded-md">
+            Prateleiras
+          </Link>
         </div>
       </div>
 
@@ -59,11 +63,9 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
         />
       )}
 
-      {/* Menu lateral */}
+      {/* Menu lateral sem links */}
       <div
-        className={`fixed top-0 left-0 h-full bg-white w-64 transform transition-transform duration-300 ease-in-out ${
-          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } z-50`}
+        className={`fixed top-0 left-0 h-full bg-white w-64 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} z-50`}
       >
         <div className="flex justify-between items-center p-4 bg-indigo-600 text-white">
           <h2 className="text-lg font-bold">Menu</h2>
@@ -76,11 +78,10 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
         </div>
 
         {/* Exibição do email do usuário e botão de logout */}
-        <div className="p-4">
+        <div className="p-4 mt-6">
           {userEmail ? (
             <div className="mb-4">
               <p className={`text-gray-700 ${getEmailStyle()}`}>
-                {/* Aqui aplicamos a alteração do tamanho da fonte */}
                 Olá bem-vindo, {userEmail}
               </p>
               <button
