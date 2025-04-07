@@ -11,7 +11,6 @@ export default function CadastrarProduto() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const router = useRouter();
 
   // Função para enviar o formulário
   const handleSubmit = async (e: React.FormEvent) => {
