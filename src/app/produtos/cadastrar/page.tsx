@@ -1,7 +1,5 @@
 'use client';
-
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ToastNotifications, successToast, errorToast } from '../../../components/ToastNotifications'; // Importando as funções de toast
 
 export default function CadastrarProduto() {
