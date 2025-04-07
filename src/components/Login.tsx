@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
+import { successToast, errorToast } from './ToastNotifications'; // Importar as funções
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -19,7 +20,7 @@ export default function Login() {
         email,
         password,
       });
-      
+
       if (error) throw error;
 
       // Armazenar o token JWT no localStorage
@@ -31,9 +32,15 @@ export default function Login() {
       // Usuário logado com sucesso, redirecionar para a página de estoque
       router.push('/estoque/produtos');
       
+      // Exibir notificação de sucesso
+      successToast("Login bem-sucedido! Redirecionando...");
+
       console.log('Usuário logado:', data);
     } catch (err: any) {
       setError(err.message);
+      
+      // Exibir notificação de erro
+      errorToast(`Erro: ${err.message}`);
     }
   };
 
@@ -62,7 +69,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Senha</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
             <input
               id="password"
               type="password"

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase'; // Supondo que você tenha configurado o Supabase dessa forma
 import Header from '../../../components/Header';
 import { useRouter } from 'next/navigation';
+import { successToast, errorToast } from '../../../components/ToastNotifications'; // Importando as funções de toast
+import { ToastContainer } from 'react-toastify'; // Importando o ToastContainer
 
 export default function CriarPrateleiraPage() {
   const [prateleiraNome, setPrateleiraNome] = useState<string>(''); // Estado para o nome da nova prateleira
@@ -34,14 +36,19 @@ export default function CriarPrateleiraPage() {
 
       if (error) {
         setError(error.message);
+        errorToast(`Erro: ${error.message}`); // Notificação de erro
         return;
       }
 
-      // Se a criação for bem-sucedida, redirecionar para a página de prateleiras
-      router.push('/prateleiras');
+      // Se a criação for bem-sucedida, exibe a notificação de sucesso
+      successToast('Prateleira criada com sucesso!');
+      // Limpa o campo de nome da prateleira
+      setPrateleiraNome('');
+      // Redireciona para a página de prateleiras após sucesso
     } catch (error) {
       console.error('Erro ao criar prateleira:', error);
       setError('Erro ao criar prateleira. Tente novamente.');
+      errorToast('Erro ao criar prateleira. Tente novamente.'); // Notificação de erro
     } finally {
       setLoading(false);
     }
@@ -101,6 +108,9 @@ export default function CriarPrateleiraPage() {
           </button>
         </form>
       </div>
+
+      {/* ToastContainer para renderizar as notificações */}
+      <ToastContainer />
     </div>
   );
 }

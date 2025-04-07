@@ -1,151 +1,175 @@
-'use client';
+'use client'; // Garantir que o código será executado no lado do cliente
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useParams } from 'next/navigation';  // Usando useParams para acessar o parâmetro da URL
+import { useRouter, useParams } from 'next/navigation'; // Importando useParams do next/navigation
+import { supabase } from '../../../../lib/supabase'; // Ajuste o caminho conforme necessário
+import Header from '../../../../components/Header';
+import { successToast, errorToast } from '../../../../components/ToastNotifications'; // Funções de notificação
+import { ToastContainer } from 'react-toastify'; // Container para renderizar os toasts
 
-export default function EditarProduto() {
-  const { id } = useParams();  // Agora usamos useParams para pegar o id da URL
-  const router = useRouter();
+export default function EditProdutoPage() {
   const [produto, setProduto] = useState<any | null>(null);
+  const [nome, setNome] = useState<string>('');
+  const [codBarras, setcodBarras] = useState<string>(''); 
+  const [SKU, setSKU] = useState<string>(''); 
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null); // Estado para o email do usuário
+  const router = useRouter(); // Acesso ao router para redirecionamento
+  const { id } = useParams(); // Usando useParams() para pegar o parâmetro da URL
 
+  // Função assíncrona para carregar dados do produto
   useEffect(() => {
-    if (!id) return; // Garante que a consulta só aconteça quando o id estiver disponível.
+    // Recuperando o email do usuário
+    const email = localStorage.getItem('user_email'); // Recuperando o email do usuário do localStorage
+    setUserEmail(email); // Atualizando o estado com o email do usuário
+
+    if (!id) return; // Se não tiver ID na URL, não faz nada
 
     const fetchProduto = async () => {
-      try {
-        const response = await fetch(`https://eyezlckotjducyuknbel.supabase.co/rest/v1/produtos?id=eq.${id}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('supabase_jwt')}`,
-            'Content-Type': 'application/json',
-            'apikey': process.env.SUPABASE_KEY || '',
-          },
-        });
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-        if (!response.ok) {
-          const errorDetails = await response.text();
-          throw new Error(`Erro ao carregar os dados. Status: ${response.status}, Mensagem: ${errorDetails}`);
-        }
-
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setProduto(data[0]); // A API retorna um array de produtos
-        } else {
-          setError('Produto não encontrado.');
-        }
-      } catch (error: any) {
-        console.error('Erro ao buscar o produto:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error('Erro ao carregar produto:', error.message);
+      } else {
+        setProduto(data);
+        setNome(data.nome); // Preenche o campo de nome com o valor atual
+        setcodBarras(data.codBarras); // Preenche o código de barras
+        setSKU(data.SKU); // Preenche o SKU
       }
+
+      setLoading(false);
     };
 
     fetchProduto();
-  }, [id]); // Recarrega os dados quando o id muda
+  }, [id]);
 
-  const handleSave = async () => {
-    if (!produto) return;
+  // Função para salvar o produto editado
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!nome || !codBarras || !SKU) {
+      alert('Todos os campos devem ser preenchidos!');
+      return;
+    }
 
     try {
-      const response = await fetch(`https://eyezlckotjducyuknbel.supabase.co/rest/v1/produtos?id=eq.${id}`, {
-        method: 'PATCH', // Método para editar os dados
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase_jwt')}`,
-          'Content-Type': 'application/json',
-          'apikey': process.env.SUPABASE_KEY || '',
-        },
-        body: JSON.stringify({
-          nome: produto.nome,
-          sku: produto.sku,
-          codBarras: produto.codBarras,
-        }),
-      });
+      const { error } = await supabase
+        .from('produtos')
+        .update({ nome, codBarras, SKU })
+        .eq('id', id);
 
-      if (!response.ok) {
-        const errorDetails = await response.text();
-        throw new Error(`Erro ao atualizar o produto. Status: ${response.status}, Mensagem: ${errorDetails}`);
+      if (error) {
+        console.error('Erro ao atualizar produto:', error.message);
+        errorToast('Erro ao atualizar produto. Tente novamente.');
+      } else {
+        successToast('Produto atualizado com sucesso!');
+        
+        // Delay de 1 segundo antes de redirecionar
+        setTimeout(() => {
+          router.push('/produtos'); // Redireciona para a lista de produtos
+        }, 1000);
       }
+    } catch (error) {
+      console.error('Erro ao atualizar produto:', error);
+      errorToast('Erro ao atualizar produto. Tente novamente.');
+    }
+  };
 
-      router.push('/produtos'); // Redireciona para a lista de produtos após salvar
-    } catch (error: any) {
-      console.error('Erro ao salvar o produto:', error);
-      setError(error.message);
+  // Função para logout
+  const onLogout = async (): Promise<void> => {
+    try {
+      await supabase.auth.signOut();
+      console.log('Usuário deslogado');
+      // Redirecionar o usuário para a página de login após o logout
+      router.push('/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
     }
   };
 
   if (loading) {
-    return <div className="text-center">Carregando...</div>;
+    return <div>Carregando...</div>;
   }
 
-  if (error) {
-    return <div className="text-red-500 text-center">{error}</div>;
+  if (!produto) {
+    return <div>Produto não encontrado!</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-6 rounded-lg shadow-2xl border border-gray-200">
-        <h2 className="text-2xl font-extrabold text-center text-gray-700">Editar Produto</h2>
+    <div className="min-h-screen bg-gray-100">
+      {/* Passa o email do usuário para o Header */}
+      <Header userEmail={userEmail} onLogout={onLogout} />
 
-        {/* Exibindo erro ou sucesso */}
-        {error && (
-          <div className="bg-red-500 text-white text-center p-3 mb-4 rounded-lg shadow-md">
-            {error}
-          </div>
-        )}
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold text-center mb-6">Editar Produto</h1>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome</label>
+        <form onSubmit={handleSave} className="max-w-lg mx-auto bg-white p-6 rounded-md shadow-md">
+          <div className="mb-4">
+            <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
+              Nome do Produto
+            </label>
             <input
+              type="text"
               id="nome"
-              type="text"
-              value={produto?.nome || ''}
-              onChange={(e) => setProduto({ ...produto, nome: e.target.value })}
-              required
-              className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Digite o nome do produto"
             />
           </div>
 
-          <div>
-            <label htmlFor="sku" className="block text-sm font-medium text-gray-700">SKU</label>
+          <div className="mb-4">
+            <label htmlFor="codBarras" className="block text-sm font-medium text-gray-700">
+              Código de Barras
+            </label>
             <input
-              id="sku"
               type="text"
-              value={produto?.sku || ''}
-              onChange={(e) => setProduto({ ...produto, sku: e.target.value })}
-              required
-              className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="codBarras" className="block text-sm font-medium text-gray-700">Código de Barras</label>
-            <input
               id="codBarras"
-              type="text"
-              value={produto?.codBarras || ''}
-              onChange={(e) => setProduto({ ...produto, codBarras: e.target.value })}
-              required
-              className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              value={codBarras}
+              onChange={(e) => setcodBarras(e.target.value)}
+              className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Digite o código de barras"
             />
           </div>
 
-          <div>
+          <div className="mb-4">
+            <label htmlFor="SKU" className="block text-sm font-medium text-gray-700">
+              SKU
+            </label>
+            <input
+              type="text"
+              id="SKU"
+              value={SKU}
+              onChange={(e) => setSKU(e.target.value)}
+              className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Digite o SKU"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={handleSave}
-              className={`w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={loading}
+              onClick={() => router.push('/produtos')}
+              className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500"
             >
-              {loading ? 'Salvando...' : 'Salvar Produto'}
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              Salvar
             </button>
           </div>
         </form>
       </div>
+
+      {/* ToastContainer para renderizar as notificações */}
+      <ToastContainer />
     </div>
   );
 }

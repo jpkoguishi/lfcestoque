@@ -4,14 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation'; // Importando useParams do next/navigation
 import { supabase } from '../../../../lib/supabase'; // Ajuste o caminho conforme necessário
 import Header from '../../../../components/Header';
+import { successToast, errorToast } from '../../../../components/ToastNotifications'; // Funções de notificação
+import { ToastContainer } from 'react-toastify'; // Container para renderizar os toasts
 
 export default function EditPrateleiraPage() {
   const [prateleira, setPrateleira] = useState<any | null>(null);
   const [nome, setNome] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [userEmail, setUserEmail] = useState<string | null>(null); // Estado para o email do usuário
-  const router = useRouter();  // Acesso ao router para redirecionamento
-  const { id } = useParams();  // Usando useParams() para pegar o parâmetro da URL
+  const router = useRouter(); // Acesso ao router para redirecionamento
+  const { id } = useParams(); // Usando useParams() para pegar o parâmetro da URL
 
   // Função assíncrona para carregar dados da prateleira
   useEffect(() => {
@@ -58,12 +60,18 @@ export default function EditPrateleiraPage() {
 
       if (error) {
         console.error('Erro ao atualizar prateleira:', error.message);
+        errorToast('Erro ao atualizar prateleira. Tente novamente.');
       } else {
-        alert('Prateleira atualizada com sucesso!');
-        router.push('/prateleiras'); // Redireciona de volta para a lista de prateleiras
+        successToast('Prateleira atualizada com sucesso!');
+        
+        // Delay de 1 segundo antes de redirecionar
+        setTimeout(() => {
+          router.push('/prateleiras'); // Redireciona para a lista de prateleiras
+        }, 1000);
       }
     } catch (error) {
       console.error('Erro ao atualizar prateleira:', error);
+      errorToast('Erro ao atualizar prateleira. Tente novamente.');
     }
   };
 
@@ -127,6 +135,9 @@ export default function EditPrateleiraPage() {
           </div>
         </form>
       </div>
+
+      {/* ToastContainer para renderizar as notificações */}
+      <ToastContainer />
     </div>
   );
 }

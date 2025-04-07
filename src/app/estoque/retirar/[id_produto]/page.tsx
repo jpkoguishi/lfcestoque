@@ -5,6 +5,7 @@ import Retirar from '../../../../components/modals/Retirar'; // Importando o com
 import { useParams } from 'next/navigation'; // Usando useParams para pegar o id_produto da URL
 import Header from '../../../../components/Header'; // Importando o Header
 import { useRouter } from 'next/navigation'; // Importando o useRouter de next/navigation para navegação
+import { ToastNotifications, successToast, errorToast } from '../../../../components/ToastNotifications'; // Importando as funções de toast
 
 const RetirarEstoque = () => {
   const [estoques, setEstoques] = useState<any[]>([]);  // Estado para armazenar os estoques
@@ -124,6 +125,7 @@ const RetirarEstoque = () => {
       
       if (updatedQuantity < 0) {
         setError('Quantidade insuficiente no estoque!');
+        errorToast('Quantidade insuficiente no estoque!');
         return;
       }
 
@@ -198,11 +200,12 @@ const RetirarEstoque = () => {
           )
         );
 
-        alert('Produto retirado com sucesso!');
+        successToast('Produto retirado com sucesso!');
         setIsModalOpen(false);  // Fecha o modal
       } catch (error) {
         console.error('Erro no processamento:', error);
         setError('Erro ao processar a retirada do estoque');
+        errorToast('Erro ao processar a retirada do estoque');
       }
     }
   };
@@ -282,6 +285,9 @@ const RetirarEstoque = () => {
         onClose={handleModalClose}
         onSubmit={handleRetirada}
       />
+
+      {/* Componente ToastNotifications */}
+      <ToastNotifications />
     </div>
   );
 };

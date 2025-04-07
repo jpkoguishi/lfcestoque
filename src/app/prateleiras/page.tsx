@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import { supabase } from '../../lib/supabase'; // Supondo que você tenha configurado o Supabase dessa forma
 import { useRouter } from 'next/navigation';
+import { successToast, errorToast } from '../../components/ToastNotifications'; // Importando as funções de toast
+import { ToastContainer } from 'react-toastify'; // Importando o ToastContainer
 
 export default function PrateleirasPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null); // Definindo o estado do email do usuário
   const [prateleiras, setPrateleiras] = useState<any[]>([]); // Lista de prateleiras
   const [produtosPorPrateleira, setProdutosPorPrateleira] = useState<any>({}); // Dicionário de produtos por prateleira
   const [searchQuery, setSearchQuery] = useState<string>(''); // Estado para o campo de busca
+  const [showModal, setShowModal] = useState<boolean>(false); // Estado para controlar a visibilidade do modal
+  const [selectedPrateleiraId, setSelectedPrateleiraId] = useState<string | null>(null); // Estado para armazenar o ID da prateleira selecionada
   const router = useRouter();
 
   // Função para verificar se o usuário está logado
@@ -57,8 +61,11 @@ export default function PrateleirasPage() {
 
       if (prateleirasError) {
         console.error('Erro ao carregar prateleiras:', prateleirasError);
+        // errorToast('Erro ao carregar prateleiras.');
       } else {
         setPrateleiras(prateleirasData);
+        // Remover a chamada de sucesso (successToast)
+        // successToast('Prateleiras carregadas com sucesso!'); 
       }
 
       // Para cada prateleira, buscar os produtos associados a ela na tabela 'estoques'
@@ -70,6 +77,7 @@ export default function PrateleirasPage() {
 
         if (produtosError) {
           console.error(`Erro ao carregar produtos da prateleira ${prateleira.id}:`, produtosError);
+          // errorToast(`Erro ao carregar produtos da prateleira ${prateleira.id}.`);
         } else {
           // Se não houver produtos, definimos um valor padrão
           setProdutosPorPrateleira((prev: any) => ({
@@ -90,23 +98,40 @@ export default function PrateleirasPage() {
   );
 
   // Função para excluir uma prateleira
-  const handleDelete = async (id: string) => {
-    try {
-      if (window.confirm('Tem certeza que deseja excluir esta prateleira?')) {
-        const { error } = await supabase
-          .from('prateleiras')
-          .delete()
-          .eq('id', id);
+  const handleDelete = async () => {
+    if (!selectedPrateleiraId) return;
 
-        if (error) {
-          console.error('Erro ao excluir a prateleira:', error.message);
-        } else {
-          setPrateleiras(prateleiras.filter((prateleira) => prateleira.id !== id)); // Atualiza a lista de prateleiras após a exclusão
-        }
+    try {
+      const { error } = await supabase
+        .from('prateleiras')
+        .delete()
+        .eq('id', selectedPrateleiraId);
+
+      if (error) {
+        console.error('Erro ao excluir a prateleira:', error.message);
+        errorToast('Erro ao excluir a prateleira. Tente novamente.');
+      } else {
+        setPrateleiras(prateleiras.filter((prateleira) => prateleira.id !== selectedPrateleiraId));
+        successToast('Prateleira excluída com sucesso!');
       }
     } catch (error) {
       console.error('Erro ao excluir prateleira:', error);
+      errorToast('Erro ao excluir a prateleira. Tente novamente.');
+    } finally {
+      setShowModal(false); // Fechar o modal após a ação
     }
+  };
+
+  // Função para abrir o modal de confirmação
+  const openModal = (id: string) => {
+    setSelectedPrateleiraId(id);
+    setShowModal(true);
+  };
+
+  // Função para fechar o modal
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedPrateleiraId(null);
   };
 
   return (
@@ -167,7 +192,7 @@ export default function PrateleirasPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
                       <button
-                        onClick={() => handleDelete(prateleira.id)}
+                        onClick={() => openModal(prateleira.id)} // Abre o modal
                         className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                       >
                         Excluir
@@ -190,6 +215,33 @@ export default function PrateleirasPage() {
           </table>
         </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-auto shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-700">Confirmar Exclusão</h3>
+            <p className="text-gray-600 mt-2">Você tem certeza que deseja excluir esta prateleira?</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={closeModal} // Fechar o modal sem excluir
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md mr-2"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete} // Confirmar exclusão
+                className="bg-red-500 text-white px-4 py-2 rounded-md"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ToastContainer para renderizar as notificações */}
+      <ToastContainer />
     </div>
   );
 }

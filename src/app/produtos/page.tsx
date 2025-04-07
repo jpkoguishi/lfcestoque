@@ -6,6 +6,7 @@ import { useUser } from '../../context/UserContext';
 import Header from '../../components/Header';
 import ConfirmDeleteModal from '../../components/modals/ConfirmDeleteModal';
 import { supabase } from '@/lib/supabase';
+import { ToastNotifications, successToast, errorToast } from '../../components/ToastNotifications'; // Importando as funções de toast
 
 export default function Produtos() {
   const { user, setUser } = useUser();
@@ -19,7 +20,7 @@ export default function Produtos() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [searchBy, setSearchBy] = useState<string>('codBarras');
   
-  console.log(user)// Estado para armazenar a escolha do filtro (codBarras, SKU, nome)
+  console.log(user)
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [produtoParaExcluir, setProdutoParaExcluir] = useState<any | null>(null);
@@ -34,6 +35,7 @@ export default function Produtos() {
     const token = localStorage.getItem('supabase_jwt');
     if (!token) {
       setError('Token JWT não encontrado.');
+      errorToast('Token JWT não encontrado.');  // Exibe erro com toast
       router.push('/error');
       return;
     }
@@ -43,12 +45,8 @@ export default function Produtos() {
 
     const fetchProdutos = async () => {
       try {
-        // Criar a consulta com o Supabase
-        let query = supabase
-          .from('produtos')
-          .select('*');
+        let query = supabase.from('produtos').select('*');
 
-        // Se houver um termo de busca, aplicar filtro baseado na escolha do usuário
         if (searchTerm) {
           query = query.ilike(searchBy, `%${searchTerm}%`);
         }
@@ -57,25 +55,29 @@ export default function Produtos() {
 
         if (error) {
           setError('Erro ao carregar os dados.');
+          errorToast('Erro ao carregar os dados.'); // Exibe erro com toast
           console.error('Erro ao carregar os dados:', error);
         }
 
         if (data) {
           setProdutos(data);
           setFilteredProdutos(data);
+          // successToast('Produtos carregados com sucesso!'); // Removido conforme solicitado
         } else {
           setError('Nenhum produto encontrado.');
+          errorToast('Nenhum produto encontrado.'); // Exibe erro com toast
         }
       } catch (error: any) {
         console.error('Erro ao buscar os produtos:', error);
         setError(error.message);
+        errorToast(`Erro ao buscar os produtos: ${error.message}`); // Exibe erro com toast
       } finally {
         setLoading(false);
       }
     };
 
     fetchProdutos();
-  }, [isClient, searchTerm, searchBy, router]); // Recarregar sempre que o termo de busca ou o filtro mudar
+  }, [isClient, searchTerm, searchBy, router]);
 
   const handleLogout = async () => {
     localStorage.removeItem('supabase_jwt');
@@ -107,7 +109,7 @@ export default function Produtos() {
 
     const token = localStorage.getItem('supabase_jwt');
 
-    // Passo 1: Excluir os registros de estoque relacionados ao produto
+    // Excluindo os registros de estoque relacionados ao produto
     const deleteEstoquesResponse = await fetch(`https://eyezlckotjducyuknbel.supabase.co/rest/v1/estoques?id_produto=eq.${produtoParaExcluir.id}`, {
       method: 'DELETE',
       headers: {
@@ -118,11 +120,11 @@ export default function Produtos() {
     });
 
     if (!deleteEstoquesResponse.ok) {
-      console.error('Erro ao excluir os registros de estoque');
+      errorToast('Erro ao excluir os registros de estoque'); // Exibe erro com toast
       return;
     }
 
-    // Passo 2: Excluir o produto
+    // Excluindo o produto
     const deleteProdutoResponse = await fetch(`https://eyezlckotjducyuknbel.supabase.co/rest/v1/produtos?id=eq.${produtoParaExcluir.id}`, {
       method: 'DELETE',
       headers: {
@@ -133,11 +135,11 @@ export default function Produtos() {
     });
 
     if (deleteProdutoResponse.ok) {
-      // Remover o produto da lista após a exclusão
       setProdutos(produtos.filter(p => p.id !== produtoParaExcluir.id));
       setFilteredProdutos(filteredProdutos.filter(p => p.id !== produtoParaExcluir.id));
+      successToast('Produto excluído com sucesso!'); // Exibe sucesso com toast
     } else {
-      console.error('Erro ao excluir o produto');
+      errorToast('Erro ao excluir o produto'); // Exibe erro com toast
     }
 
     handleCloseModal();
@@ -163,7 +165,6 @@ export default function Produtos() {
           Cadastrar Produto
         </button>
 
-        {/* Select para escolher o critério de busca */}
         <select
           value={searchBy}
           onChange={(e) => setSearchBy(e.target.value)}
@@ -174,7 +175,6 @@ export default function Produtos() {
           <option value="nome">Nome</option>
         </select>
 
-        {/* Barra de pesquisa */}
         <input
           type="text"
           value={searchTerm}
@@ -234,6 +234,9 @@ export default function Produtos() {
         onConfirm={handleConfirmDelete}
         produtoNome={produtoParaExcluir?.nome || ''}
       />
+      
+      {/* Componente ToastNotifications */}
+      <ToastNotifications />
     </div>
   );
 }

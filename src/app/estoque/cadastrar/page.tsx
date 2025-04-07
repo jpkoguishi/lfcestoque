@@ -1,7 +1,8 @@
-'use client';
+'use client';  // Isso é necessário para que funcione no Next.js 13+ com App Router
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { successToast, errorToast, ToastNotifications } from '../../../components/ToastNotifications'; // Importe as funções de notificação
 
 interface Produto {
   id: number;
@@ -28,8 +29,6 @@ const CadastrarEstoque = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
   const [prateleiraSelecionada, setPrateleiraSelecionada] = useState<Prateleira | null>(null);
   const [quantidade, setQuantidade] = useState<number>(0);
-
-  console.log(produtos);
 
   useEffect(() => {
     const fetchProdutos = async () => {
@@ -177,7 +176,8 @@ const CadastrarEstoque = () => {
           throw new Error('Erro ao atualizar estoque');
         }
 
-        alert('Estoque atualizado com sucesso!');
+        // Notificação de sucesso
+        successToast('Estoque atualizado com sucesso!');
       } else {
         const response = await fetch(
           'https://eyezlckotjducyuknbel.supabase.co/rest/v1/estoques',
@@ -198,7 +198,8 @@ const CadastrarEstoque = () => {
           throw new Error('Erro ao cadastrar estoque');
         }
 
-        alert('Estoque cadastrado com sucesso!');
+        // Notificação de sucesso
+        successToast('Estoque cadastrado com sucesso!');
       }
 
       // Atualizar a quantidade total do produto
@@ -250,7 +251,7 @@ const CadastrarEstoque = () => {
       setFilteredPrateleiras([]);
     } catch (error) {
       console.error('Erro no processamento:', error);
-      setError('Erro ao processar o estoque');
+      errorToast('Erro ao processar o estoque');
     } finally {
       setLoading(false);
     }
@@ -347,6 +348,8 @@ const CadastrarEstoque = () => {
             </button>
           </div>
         </form>
+
+        <ToastNotifications /> {/* Coloque o componente Toast aqui para garantir que as notificações apareçam */}
       </div>
     </div>
   );

@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ToastNotifications, successToast, errorToast } from '../../../components/ToastNotifications'; // Importando as funções de toast
 
 export default function CadastrarProduto() {
   const [nome, setNome] = useState('');
-  const [sku, setSku] = useState('');
+  const [SKU, setSKU] = useState('');
   const [codBarras, setCodBarras] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +18,9 @@ export default function CadastrarProduto() {
     e.preventDefault();
 
     // Validação básica
-    if (!nome || !sku || !codBarras) {
+    if (!nome || !SKU || !codBarras) {
       setError('Todos os campos são obrigatórios.');
+      errorToast('Todos os campos são obrigatórios.');  // Exibe erro com toast
       return;
     }
 
@@ -37,7 +39,7 @@ export default function CadastrarProduto() {
         },
         body: JSON.stringify({
           nome,
-          sku,
+          SKU,
           codBarras,
         }),
       });
@@ -49,16 +51,18 @@ export default function CadastrarProduto() {
 
       // Limpar o formulário e exibir sucesso
       setNome('');
-      setSku('');
+      setSKU('');
       setCodBarras('');
       setSuccessMessage('Produto cadastrado com sucesso!');
-      setTimeout(() => router.push('/produtos'), 2000); // Redireciona para a página de produtos após 2 segundos
+      successToast('Produto cadastrado com sucesso!');  // Exibe sucesso com toast
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message); // This will work as TypeScript now knows `err` is of type `Error`
+        errorToast(`Erro ao cadastrar produto: ${err.message}`);  // Exibe erro com toast
       } else {
         // Handle other error types or log unexpected ones
         setError('Erro desconhecido');
+        errorToast('Erro desconhecido');  // Exibe erro com toast
       }
     } finally {
       setLoading(false);
@@ -96,12 +100,12 @@ export default function CadastrarProduto() {
           </div>
 
           <div>
-            <label htmlFor="sku" className="block text-sm font-medium text-gray-700">SKU</label>
+            <label htmlFor="SKU" className="block text-sm font-medium text-gray-700">SKU</label>
             <input
-              id="sku"
+              id="SKU"
               type="text"
-              value={sku}
-              onChange={(e) => setSku(e.target.value)}
+              value={SKU}
+              onChange={(e) => setSKU(e.target.value)}
               required
               className="w-full mt-1 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
             />
@@ -130,6 +134,9 @@ export default function CadastrarProduto() {
           </div>
         </form>
       </div>
+
+      {/* Componente ToastNotifications */}
+      <ToastNotifications />
     </div>
   );
 }

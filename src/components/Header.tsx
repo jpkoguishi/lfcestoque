@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link'; // Importa o Link do Next.js
+import { successToast, errorToast } from '../components/ToastNotifications'; // Importando as funções de notificação
 
 interface HeaderProps {
   userEmail: string | null;
@@ -19,6 +20,26 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
       return "text-sm"; // Reduz o tamanho da fonte se o email for muito longo
     }
     return "text-base"; // Mantém o tamanho padrão se o email não for muito longo
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Chama a função de logout
+      await onLogout(); // Assume que o onLogout é uma função que lida com o logout do usuário
+
+      // Exibe a notificação de sucesso
+      successToast('Você foi deslogado com sucesso!');
+    } catch (error: unknown) {
+      // Verifica se o error é uma instância de Error
+      if (error instanceof Error) {
+        // Se for um erro, exibe a notificação de erro com a mensagem
+        errorToast(`Erro ao sair: ${error.message}`);
+      } else {
+        // Caso o erro não seja uma instância de Error, exibe uma mensagem genérica
+        errorToast('Ocorreu um erro desconhecido ao tentar sair.');
+      }
+      console.error('Erro ao fazer logout:', error);
+    }
   };
 
   return (
@@ -85,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({ userEmail, onLogout }) => {
                 Olá bem-vindo, {userEmail}
               </p>
               <button
-                onClick={onLogout}
+                onClick={handleLogout}  // Chamando a função de logout
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-full"
               >
                 Sair
